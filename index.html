@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>母亲节快乐</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 100%; height: 100vh; overflow: hidden;
+            background: linear-gradient(135deg, #ffe6f0 0%, #fff0f5 100%);
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        #particles {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        .greeting {
+            position: absolute; left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 11vw; font-weight: bold; color: #FF69B4;
+            text-shadow: 0 0 25px #FFB6C1, 0 0 10px #FF69B4;
+            z-index: 2; white-space: nowrap;
+            animation: blink 0.6s infinite;
+            transition: top 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .greeting.stop-blink { animation: none; opacity: 1; }
+        .greeting.move-up { top: 15%; }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.15; }
+        }
+        .bouquet-container {
+            position: absolute; left: 50%; bottom: 6%;
+            transform: translateX(-50%); z-index: 2; opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+        .bouquet-container.show { opacity: 1; }
+        .bouquet { position: relative; width: 180px; height: 240px; margin: 0 auto; }
+        .bouquet .flower {
+            position: absolute; display: block; line-height: 1;
+            filter: drop-shadow(0 4px 6px rgba(255, 105, 180, 0.4));
+        }
+        /* 祝福文字（静态，无动画） */
+        .blessing-text {
+            position: absolute; left: 50%; top: 0;
+            transform: translate(-50%, 0);
+            margin-top: 258px;
+            font-size: 6.5vw; font-weight: bold; color: #000000;
+            text-shadow: 0 0 20px #fff, 0 0 40px #FFB6C1;
+            z-index: 3; text-align: center; white-space: nowrap; opacity: 0;
+            transition: opacity 1s ease; pointer-events: none;
+        }
+        .blessing .line2 {
+            inline-block + width:100% 
+            text-align: right;
+        }
+        .blessing-text.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div class="greeting" id="greeting">母亲节快乐</div>
+    <div class="bouquet-container" id="bouquetContainer">
+        <div class="bouquet">
+            <!-- 左右绿叶 -->
+            <span class="flower" style="font-size: 70px; left: -25px; top: 40px;transform: scaleX(-1);">🌿</span>
+            <span class="flower" style="font-size: 70px; right: -25px; top: 40px;">🌿</span>
+             <!-- 左上右上小玫瑰 -->
+            <span class="flower" style="font-size: 60px; left: 5px; top: 25px; transform: rotate(-30deg) scaleX(-1);">🌹</span>
+            <span class="flower" style="font-size: 60px; right: 5px; top: 25px; transform: rotate(30deg);">🌹</span>
+             <!-- 中心大玫瑰 -->
+            <span class="flower" style="font-size: 105px; left: 25px; top: 20px;">🌹</span>
+            <!-- 左右小玫瑰 -->
+            <span class="flower" style="font-size: 80px; left: 0px; top: 50px; transform: rotate(-30deg) scaleX(-1);">🌹</span>
+            <span class="flower" style="font-size: 80px; right: 0px; top: 50px; transform: rotate(30deg);">🌹</span>
+            <!-- 对称绿叶 -->
+            <span class="flower" style="font-size: 45px; left: 20px; top: 80px;transform: scaleX(-1);">🌿</span>
+            <span class="flower" style="font-size: 45px; right: 20px; top: 80px;">🌿</span>
+            <span class="flower" style="font-size: 65px; left: -10px; top: 95px;transform: scaleX(-1);">🍃</span>
+            <span class="flower" style="font-size: 65px; right: -10px; top: 95px;">🍃</span>
+            <!-- 蝴蝶结 -->
+            <span class="flower" style="font-size: 85px; left: 37px; top: 95px;">🎀</span>
+        </div>
+    </div>
+    <div class="blessing-text" id="blessing"> 
+        <span class="line1">祝妈妈天天开心，身体健康！</span><br>
+        <span class="line2">-燚涵</span>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let stage = 0;          // 0: 背景爱心粒子  1: 跳动大爱心
+
+            // ---------- 背景爱心粒子 ----------
+            const bgParticles = [];
+            const BG_COUNT = 88;
+            function BgParticle() { this.reset(true); }
+            BgParticle.prototype.reset = function(initial) {
+                this.x = Math.random() * width;
+                this.y = initial ? Math.random() * height : height + Math.random() * 80 + 20;
+                this.size = 5 + Math.random() * 1.8;
+                this.speed = 0.4 + Math.random() * 1.8;
+                this.opacity = 0.25 + Math.random() * 0.45;
+                this.hue = 330 + Math.random() * 30;
+                this.drift = (Math.random() - 0.5) * 0.4;
+            };
+            BgParticle.prototype.update = function() {
+                this.y -= this.speed; this.x += this.drift;
+                if (this.y < -40 || this.x < -30 || this.x > width + 30) this.reset(false);
+            };
+            BgParticle.prototype.draw = function(ctx) {
+                ctx.save(); ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = `hsl(${this.hue}, 100%, 75%)`;
+                drawHeartPath(ctx, this.x, this.y, this.size);
+                ctx.fill(); ctx.restore();
+            };
+
+            // 心形路径（尖朝下）
+            function drawHeartPath(ctx, x, y, size) {
+                ctx.save(); ctx.translate(x, y); ctx.scale(1, -1);
+                ctx.beginPath();
+                for (let t = 0; t < Math.PI * 2; t += 0.02) {
+                    const px = 16 * Math.pow(Math.sin(t), 3);
+                    const py = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+                    if (t === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.scale(size/16, size/16);
+                ctx.restore();
+            }
+
+            // ---------- 阶段1：跳动大爱心（翻转，尖朝上） ----------
+            const heartParticles = [];
+            const HEART_COUNT = 600;
+            let heartCenterX, heartCenterY;
+            let tempCanvas, tempCtx;
+
+            function prepareHeartParticles() {
+                tempCanvas = document.createElement('canvas');
+                tempCanvas.width = 200; tempCanvas.height = 200;
+                tempCtx = tempCanvas.getContext('2d');
+                // 绘制标准心形（尖朝下），后续会翻转
+                tempCtx.save();
+                tempCtx.translate(100, 100);
+                tempCtx.scale(5, 5);
+                tempCtx.beginPath();
+                for (let t = 0; t < Math.PI * 2; t += 0.02) {
+                    const px = 16 * Math.pow(Math.sin(t), 3);
+                    const py = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+                    if (t === 0) tempCtx.moveTo(px, py);
+                    else tempCtx.lineTo(px, py);
+                }
+                tempCtx.closePath();
+                tempCtx.restore();
+
+                heartParticles.length = 0;
+                let attempts = 0;
+                while (heartParticles.length < HEART_COUNT && attempts < 2000) {
+                    const rx = (Math.random() - 0.5) * 200;
+                    const ry = (Math.random() - 0.5) * 200;
+                    if (tempCtx.isPointInPath(rx + 100, ry + 100)) {
+                        heartParticles.push({
+                            baseX: rx,
+                            baseY: ry,
+                            offsetX: 0, offsetY: 0,
+                            size: 2.5 + Math.random() * 0.5,
+                            color: Math.random() < 0.95 ? '#FF0000' : '#FFFFFF',
+                            opacity: 0.6 + Math.random() * 0.4,
+                            phase: Math.random() * Math.PI * 2
+                        });
+                    }
+                    attempts++;
+                }
+            }
+
+            function updateHeartParticles() {
+                const time = Date.now() * 0.009;
+                for (let p of heartParticles) {
+                    p.offsetX = (Math.random() - 0.5) * 1.5;
+                    p.offsetY = (Math.random() - 0.5) * 1.5;
+                    p.currentOpacity = p.opacity * (0.6 + 0.4 * Math.sin(time + p.phase));
+                }
+            }
+
+            function drawBigHeart(ctx) {
+                const pulseScale = 1 + 0.12 * Math.sin(Date.now() * 0.005);
+                ctx.save();
+                ctx.translate(heartCenterX, heartCenterY);
+                ctx.scale(pulseScale, pulseScale);
+                // ---------- 上下翻转，使爱心尖部朝上 ----------
+                ctx.scale(1, -1);
+
+                // 绘制内部粒子
+                for (let p of heartParticles) {
+                    ctx.globalAlpha = p.currentOpacity;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.baseX + p.offsetX, p.baseY + p.offsetY, p.size, 0, Math.PI*2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // 飘散光粒子（不跟随翻转，保持自然飘散）
+                drawGlowParticles(ctx);
+            }
+
+            const glowParticles = [];
+            function drawGlowParticles(ctx) {
+                const time = Date.now();
+                if (Math.random() < 0.65) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 50 + Math.random() * 70;
+                    glowParticles.push({
+                        x: heartCenterX + Math.cos(angle) * dist,
+                        y: heartCenterY + Math.sin(angle) * dist,
+                        vx: Math.cos(angle) * (1.0 + Math.random()*2.0),
+                        vy: Math.sin(angle) * (1.0 + Math.random()*2.0),
+                        life: 1.0,
+                        decay: 0.015 + Math.random()*0.025,
+                        size: 1.5 + Math.random()*3.5,
+                        color: Math.random() < 0.5 ? '#FFB6C1' : '#FFFFFF'
+                    });
+                }
+                for (let i = glowParticles.length-1; i >= 0; i--) {
+                    const p = glowParticles[i];
+                    p.x += p.vx; p.y += p.vy;
+                    p.life -= p.decay;
+                    if (p.life <= 0) { glowParticles.splice(i,1); continue; }
+                    ctx.globalAlpha = p.life * 0.7;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+
+            // ---------- 动画循环 ----------
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                if (stage === 0) {
+                    for (let p of bgParticles) { p.update(); p.draw(ctx); }
+                } else if (stage === 1) {
+                    updateHeartParticles();
+                    drawBigHeart(ctx);
+                }
+                requestAnimationFrame(animate);
+            }
+
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width; canvas.height = height;
+                heartCenterX = width / 2;
+                heartCenterY = height * 0.45;
+                bgParticles.forEach(p => p.reset(true));
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            for (let i=0; i<BG_COUNT; i++) bgParticles.push(new BgParticle());
+            prepareHeartParticles();
+            animate();
+
+            // 2秒后：文字上移 + 花束出现
+            setTimeout(() => {
+                document.getElementById('greeting').classList.add('stop-blink','move-up');
+                document.getElementById('bouquetContainer').classList.add('show');
+            }, 2000);
+
+            // 5秒后：切换到跳动爱心 + 祝福文字（静态显示）
+            setTimeout(() => {
+                stage = 1;
+                document.getElementById('bouquetContainer').classList.remove('show');
+                document.getElementById('blessing').classList.add('show');
+            }, 5000);
+        })();
+    </script>
+</body>
+</html>
