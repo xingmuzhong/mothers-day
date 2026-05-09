@@ -1,9 +1,18 @@
-<!DOCTYPE html>
+import os
+
+def create_mothersday_html():
+    html = """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>母亲节快乐</title>
+    <!-- Open Graph 标签，用于微信分享卡片 -->
+    <meta property="og:title" content="母亲节快乐">
+    <meta property="og:description" content="节日祝福">
+    <meta property="og:image" content="https://imgchr.com/i/peLr9fO">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://xingmuzhong.github.io/mothers-day/">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -280,4 +289,13 @@
         })();
     </script>
 </body>
-</html>
+</html>"""
+
+    file_path = "mothersday.html"
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"✅ 文件已生成：{os.path.abspath(file_path)}")
+    print("📱 请将该文件通过微信“文件传输助手”发送到手机，在微信中打开即可观看。")
+
+if __name__ == "__main__":
+    create_mothersday_html()
